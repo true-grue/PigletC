@@ -2,15 +2,15 @@
 # see https://github.com/vkazanov/bytecode-interpreters-post
 # Author: Peter Sovietov
 
+import os
 import sys
-from src.main import Compiler, compile
+from src.main import compile
 
-if len(sys.argv) == 2:
+if len(sys.argv) == 2 and os.path.isfile(sys.argv[1]):
   path = sys.argv[1]
   with open(path) as f:
     src = f.read()
-  c = Compiler(path, src)
-  compile(c)
+  c = compile(path, src)
   with open("%s.pvm" % path, "w") as f:
     f.write(c.asm)
 else:

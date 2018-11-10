@@ -14,10 +14,6 @@ def add_func(t, X):
   t.c.table[X] = dict(ast=t.out)
   return True
 
-def set_func(t):
-  t.c.curr_func = t.out
-  return True
-
 def check_id(t, tag):
   n = t.out[1]
   if n not in t.c.table or attr(t.c.table[n]["ast"], "tag") != tag:
@@ -94,7 +90,7 @@ add_decls = each(alt(
 ))
 
 trans_decls = each(opt(
-  Func(Id(set_func), seq(block, flatten, add_ir))
+  Func(id, seq(block, flatten, add_ir))
 ))
 
 trans = seq(add_decls, trans_decls)
