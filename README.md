@@ -6,7 +6,7 @@ PigletC is based on [raddsl](https://github.com/true-grue/raddsl) toolset.
 
 An example of use.
 
-```
+```c
 int r;
 int n;
 
