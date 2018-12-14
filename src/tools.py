@@ -23,6 +23,10 @@ def error(msg, path=None, src=None, pos=None):
     print(msg)
   sys.exit(1)
 
+is_term = lambda x: type(x) == tuple
+is_list = lambda x: type(x) == list
+attr = lambda t, a: t[0][a]
+
 def apply_rule(rule, node, **kw):
   t = Tree(node)
   for k in kw:
@@ -32,8 +36,6 @@ def apply_rule(rule, node, **kw):
   return t.out
 
 X, Y = let(X=id), let(Y=id)
-
-is_list = lambda x: type(x) == list
 
 def flatten_term(node):
   if is_term(node):

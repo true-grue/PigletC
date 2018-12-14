@@ -12,9 +12,6 @@ class Head(dict):
 def make_term(tag):
   return lambda *a, **k: (Head(tag=tag, **k),) + a
 
-is_term = lambda x: type(x) == tuple
-attr = lambda t, a: t[0][a]
-
 Id = make_term("Id")
 Int = make_term("Int")
 Op = make_term("Op")

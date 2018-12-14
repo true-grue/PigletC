@@ -2,6 +2,7 @@
 # Author: Peter Sovietov
 
 from raddsl.parse import *
+from .tools import attr
 from  . import ast
 
 OPERATORS = "; ( ) { } + -  * / = != < <= > >=".split()
@@ -15,9 +16,9 @@ integer = seq(quote(some(digit)), ast.integer)
 operator = seq(quote(match(OPERATORS)), ast.op)
 tokens = seq(many(seq(ws, ast.pos, alt(operator, name, integer))), ws, end)
 
-ident = push(eat(lambda x: x[0] == "Id"))
+ident = push(eat(lambda x: attr(x, "tag") == "Id"))
 op = lambda n: eat(lambda x: x == ast.Op(n))
-expr_val = lambda x: x[1] if x[0] == "Op" else ast.attr(x, "tag")
+expr_val = lambda x: x[1] if attr(x, "tag") == "Op" else attr(x, "tag")
 expr = tdop(
   lambda x: prefix.get(expr_val(x)), lambda x: infix.get(expr_val(x))
 )
@@ -58,4 +59,4 @@ def parse(src, error):
   s2 = Stream(t)
   if decls(s2):
     return s2.out[0]
-  error(ast.attr(s2.buf[min(s2.error_pos, s2.size - 1)], "pos"))
+  error(attr(s2.buf[min(s2.error_pos, s2.size - 1)], "pos"))

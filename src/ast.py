@@ -2,6 +2,7 @@
 # Author: Peter Sovietov
 
 from raddsl.parse import *
+from .tools import attr
 from .term import *
 
 def pos(state):
