@@ -8,7 +8,7 @@ def pos(state):
   state.out.append(state.pos)
   return True
 
-ident = to(2, lambda p, x: Id(x, pos=p))
+ident = lambda k: to(2, lambda p, x: Op(x, pos=p) if x in k else Id(x, pos=p))
 integer = to(2, lambda p, x: Int(int(x), pos=p))
 op = to(2, lambda p, x: Op(x, pos=p))
 bop = to(3, lambda x, o, y: Bop(o[1], x, y, pos=attr(o, "pos")))

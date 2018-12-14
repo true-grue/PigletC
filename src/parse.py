@@ -4,13 +4,14 @@
 from raddsl.parse import *
 from  . import ast
 
+OPERATORS = "; ( ) { } + -  * / = != < <= > >=".split()
+KEYWORDS = "if while int void".split()
 single_comment = seq(a("//"), many(non(a("\n"))))
 multi_comment = seq(a("/*"), many(non(a("*/"))), a("*/"))
 comment = alt(single_comment, multi_comment)
 ws = many(alt(space, comment))
-name = seq(quote(letter, many(alt(letter, digit))), ast.ident)
+name = seq(quote(letter, many(alt(letter, digit))), ast.ident(KEYWORDS))
 integer = seq(quote(some(digit)), ast.integer)
-OPERATORS = "; ( ) { } + -  * / = != < <= > >= if while int void".split()
 operator = seq(quote(match(OPERATORS)), ast.op)
 tokens = seq(many(seq(ws, ast.pos, alt(operator, name, integer))), ws, end)
 
