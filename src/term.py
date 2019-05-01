@@ -1,16 +1,32 @@
 # PigletC
-# Author: Peter Sovietov
+
 
 class Head(dict):
-  def __eq__(self, right):
-    return self["tag"] == right
-  def __ne__(self, right):
-    return not self.__eq__(right)
-  def __repr__(self):
-    return self["tag"]
+    def __eq__(self, right):
+        return self["tag"] == right
+
+    def __ne__(self, right):
+        return not self.__eq__(right)
+
+    def __repr__(self):
+        return self["tag"]
+
 
 def make_term(tag):
-  return lambda *a, **k: (Head(tag=tag, **k),) + a
+    return lambda *args, **attrs: (Head(tag=tag, **attrs),) + args
+
+
+def is_term(x):
+    return isinstance(x, tuple)
+
+
+def is_list(x):
+    return isinstance(x, list)
+
+
+def attr(term, name):
+    return term[0][name]
+
 
 Id = make_term("Id")
 Int = make_term("Int")

@@ -1,51 +1,37 @@
 # PigletC
-# Author: Peter Sovietov
 
 import sys
-from raddsl.rewrite import *
-from .term import *
+from .raddsl_rewrite import Tree, perform
+from .term import is_term, is_list
 
-def get_pos(src, pos, offs=0):
-  line = src.count("\n", offs, pos)
-  line_begin = src.rfind("\n", 0, pos) + 1
-  line_end = src.find("\n", line_begin)
-  if line_end == -1:
-    line_end = len(src)
-  col = pos - line_begin
-  return line, col, src[line_begin:line_end].replace("\t", " ")
 
-def error(msg, path=None, src=None, pos=None):
-  if pos:
-    line, col, part = get_pos(src, pos)
-    print("%s:%d:%d: %s\n%s" % (path, line + 1, col + 1, msg, part))
-    print(" " * col + "^")
-  else:
-    print(msg)
-  sys.exit(1)
+def error(c, msg, pos=None):
+    if pos is None:
+        print(msg)
+    else:
+        line = c.text.count("\n", 0, pos)
+        col = pos - (c.text.rfind("\n", 0, pos) + 1)
+        print("%s:%d:%d: %s" % (c.path, line + 1, col + 1, msg))
+    sys.exit(1)
 
-is_term = lambda x: type(x) == tuple
-is_list = lambda x: type(x) == list
-attr = lambda t, a: t[0][a]
 
-def apply_rule(rule, node, **kw):
-  t = Tree(node)
-  for k in kw:
-    setattr(t, k, kw[k])
-  if not perform(t, rule):
-    error("unsupported term")
-  return t.out
+def apply(rules, ast, **attrs):
+    t = Tree(ast)
+    for a in attrs:
+        setattr(t, a, attrs[a])
+    if not perform(t, rules):
+        print("apply error")
+        sys.exit(1)
+    return t.out
 
-X, Y = let(X=id), let(Y=id)
 
-def flatten_term(node):
-  if is_term(node):
-    map(flatten_term, node)
-  elif is_list(node):
-    lst = []
-    for x in node:
-      y = flatten_term(x)
-      lst.extend(y if is_list(x) else [y])
-    node[:] = lst
-  return node
-
-flatten = build(lambda t: flatten_term(t.out))
+def flatten(ast):
+    if is_term(ast):
+        map(flatten, ast)
+    elif is_list(ast):
+        lst = []
+        for x in ast:
+            y = flatten(x)
+            lst.extend(y if is_list(x) else [y])
+        ast[:] = lst
+    return ast

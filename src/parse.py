@@ -1,9 +1,28 @@
 # PigletC
-# Author: Peter Sovietov
 
-from raddsl.parse import *
-from .tools import attr
-from  . import ast
+from .raddsl_parse import *
+from .term import *
+
+
+def mark(s):
+    s.out.append(s.pos)
+    return True
+
+
+def ast_ident(kw):
+    return to(2,
+              lambda p, x: Op(x, pos=p) if x in kw else Id(x, pos=p))
+
+
+ast_integer = to(2, lambda p, x: Int(int(x), pos=p))
+ast_op = to(2, lambda p, x: Op(x, pos=p))
+ast_bop = to(3, lambda x, o, y: Bop(o[1], x, y, pos=attr(o, "pos")))
+ast_assign = to(2, lambda x, y: Assign(x, y, pos=attr(x, "pos")))
+ast_call = to(2, lambda x, y: Call(x, y, pos=attr(x, "pos")))
+ast_if = to(2, lambda x, y: If(x, y, pos=attr(x, "pos")))
+ast_while = to(2, lambda x, y: While(x, y, pos=attr(x, "pos")))
+ast_var = to(1, lambda x: Var(x, pos=attr(x, "pos")))
+ast_func = to(2, lambda x, y: Func(x, y, pos=attr(x, "pos")))
 
 OPERATORS = "; ( ) { } + -  * / = != < <= > >=".split()
 KEYWORDS = "if while int void".split()
@@ -11,52 +30,53 @@ single_comment = seq(a("//"), many(non(a("\n"))))
 multi_comment = seq(a("/*"), many(non(a("*/"))), a("*/"))
 comment = alt(single_comment, multi_comment)
 ws = many(alt(space, comment))
-name = seq(quote(letter, many(alt(letter, digit))), ast.ident(KEYWORDS))
-integer = seq(quote(some(digit)), ast.integer)
-operator = seq(quote(match(OPERATORS)), ast.op)
-tokens = seq(many(seq(ws, ast.pos, alt(operator, name, integer))), ws, end)
+name = seq(quote(letter, many(alt(letter, digit))), ast_ident(KEYWORDS))
+integer = seq(quote(some(digit)), ast_integer)
+operator = seq(quote(match(OPERATORS)), ast_op)
+token = seq(ws, mark, alt(operator, name, integer))
 
-ident = push(eat(lambda x: attr(x, "tag") == "Id"))
-op = lambda n: eat(lambda x: x == ast.Op(n))
-expr_val = lambda x: x[1] if attr(x, "tag") == "Op" else attr(x, "tag")
-expr = tdop(
-  lambda x: prefix.get(expr_val(x)), lambda x: infix.get(expr_val(x))
-)
-exp = expr(0)
-left_op = lambda b: seq(push(id), expr(b + 1), ast.bop)
-prefix = {
-  "Id": push(id),
-  "Int": push(id),
-  "(": seq(id, exp, op(")"))
-}
-infix = {
-  "*": (left_op, 40),
-  "/": (left_op, 40),
-  "+": (left_op, 30),
-  "-": (left_op, 30),
-  "<": (left_op, 20),
-  ">": (left_op, 20),
-  "<=": (left_op, 20),
-  ">=": (left_op, 20),
-  "==": (left_op, 10),
-  "!=": (left_op, 10)
-}
-block = lambda x: block(x)
-assign = seq(ident, op("="), exp, ast.assign)
-args = group(opt(list_of(exp, op(","))))
-call = seq(ident, op("("), args, op(")"), ast.call)
-if_st = seq(op("if"), exp, block, ast.if_st)
-while_st = seq(op("while"), exp, block, ast.while_st)
+
+def op(o): return seq(token, pop(lambda x: x == ("Op", o)))
+
+
+ident = seq(token, guard(lambda x: x[0] == "Id"))
+
+
+def left(p): return seq(expr(p + 1), ast_bop)
+
+
+table, expr = precedence(token,
+                         lambda x: x[1] if x[0] == "Op" else attr(x, "tag"))
+table["Id"] = empty, None
+table["Int"] = empty, None
+table["("] = seq(drop, expr(0), op(")")), None
+table["!="] = left, 1
+table["=="] = left, 1
+table["<="] = left, 2
+table[">="] = left, 2
+table["<"] = left, 2
+table[">"] = left, 2
+table["+"] = left, 3
+table["-"] = left, 3
+table["*"] = left, 4
+table["/"] = left, 4
+
+
+def block(x): return block(x)
+
+
+assign = seq(ident, op("="), expr(0), ast_assign)
+args = group(opt(list_of(expr(0), op(","))))
+call = seq(ident, op("("), args, op(")"), ast_call)
+if_st = seq(op("if"), expr(0), block, ast_if)
+while_st = seq(op("while"), expr(0), block, ast_while)
 stmt = alt(seq(alt(assign, call), op(";")), if_st, while_st)
 block = seq(op("{"), group(many(stmt)), op("}"))
-var_decl = seq(op("int"), ident, op(";"), ast.var)
-func_decl = seq(op("void"), ident, op("("), op(")"), block, ast.func)
-decls = seq(group(many(alt(var_decl, func_decl))), end)
+var_def = seq(op("int"), ident, op(";"), ast_var)
+func_def = seq(op("void"), ident, op("("), op(")"), block, ast_func)
+main = seq(group(many(alt(var_def, func_def))), ws, end)
 
-def parse(src, error):
-  s1 = Stream(src)
-  t = s1.out if tokens(s1) else error(s1.error_pos)
-  s2 = Stream(t)
-  if decls(s2):
-    return s2.out[0]
-  error(attr(s2.buf[min(s2.error_pos, s2.size - 1)], "pos"))
+
+def parse(text, error):
+    s = Stream(text)
+    return s.out[0] if main(s) else error(s.epos)

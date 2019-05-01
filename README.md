@@ -1,10 +1,8 @@
-# PigletC
+# PigletC — a tiny C-like language compiler for [PigletVM](https://github.com/vkazanov/bytecode-interpreters-post)
 
-A tiny C-like language compiler for [PigletVM](https://github.com/vkazanov/bytecode-interpreters-post). The compiler was made for teaching purposes.
+PigletC is based on [raddsl](https://github.com/true-grue/raddsl) toolset and was made for teaching purposes. 
 
-PigletC is based on [raddsl](https://github.com/true-grue/raddsl) toolset.
-
-An example of use.
+Simple example.
 
 ```c
 int r;
@@ -20,7 +18,7 @@ void main() {
   print(r);
 }
 ```
-
+Result of compilation.
 ```
 PUSHI 1
 PUSHI 5
@@ -54,7 +52,7 @@ LOAD
 PRINT
 DONE
 ```
-
+Result of VM execution.
 ```
 pigletvm-exec asm fact.c.pvm fact.c.b
 pigletvm-exec run fact.c.b
