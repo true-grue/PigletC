@@ -33,7 +33,7 @@ ws = many(alt(space, comment))
 name = seq(quote(letter, many(alt(letter, digit))), ast_ident(KEYWORDS))
 integer = seq(quote(some(digit)), ast_integer)
 operator = seq(quote(match(OPERATORS)), ast_op)
-token = seq(ws, mark, alt(operator, name, integer))
+token = memo(seq(ws, mark, alt(operator, name, integer)))
 
 
 def op(o): return seq(token, pop(lambda x: x == ("Op", o)))
