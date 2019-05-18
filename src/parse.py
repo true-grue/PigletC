@@ -36,13 +36,16 @@ operator = seq(quote(match(OPERATORS)), ast_op)
 token = memo(seq(ws, mark, alt(operator, name, integer)))
 
 
-def op(o): return seq(token, pop(lambda x: x == ("Op", o)))
+def op(o): return seq(token, guard(lambda x: x == ("Op", o)), drop)
 
 
 ident = seq(token, guard(lambda x: x[0] == "Id"))
 
 
 def left(p): return seq(expr(p + 1), ast_bop)
+
+
+def block(x): return block(x)
 
 
 table, expr = precedence(token,
@@ -60,11 +63,6 @@ table["+"] = left, 3
 table["-"] = left, 3
 table["*"] = left, 4
 table["/"] = left, 4
-
-
-def block(x): return block(x)
-
-
 assign = seq(ident, op("="), expr(0), ast_assign)
 args = group(opt(list_of(expr(0), op(","))))
 call = seq(ident, op("("), args, op(")"), ast_call)
