@@ -63,6 +63,7 @@ table["+"] = left, 3
 table["-"] = left, 3
 table["*"] = left, 4
 table["/"] = left, 4
+
 assign = seq(ident, op("="), expr(0), ast_assign)
 args = group(opt(list_of(expr(0), op(","))))
 call = seq(ident, op("("), args, op(")"), ast_call)
