@@ -34,12 +34,10 @@ name = seq(quote(letter, many(alt(letter, digit))), ast_ident(KEYWORDS))
 integer = seq(quote(some(digit)), ast_integer)
 operator = seq(quote(match(OPERATORS)), ast_op)
 token = memo(seq(ws, mark, alt(operator, name, integer)))
+ident = seq(token, guard(lambda x: x[0] == "Id"))
 
 
 def op(o): return seq(token, guard(lambda x: x == ("Op", o)), drop)
-
-
-ident = seq(token, guard(lambda x: x[0] == "Id"))
 
 
 def left(p): return seq(expr(p + 1), ast_bop)
@@ -73,9 +71,9 @@ stmt = alt(seq(alt(assign, call), op(";")), if_st, while_st)
 block = seq(op("{"), group(many(stmt)), op("}"))
 var_def = seq(op("int"), ident, op(";"), ast_var)
 func_def = seq(op("void"), ident, op("("), op(")"), block, ast_func)
-main = seq(group(many(alt(var_def, func_def))), ws, end)
+main = seq(many(alt(var_def, func_def)), ws, end)
 
 
 def parse(text, error):
     s = Stream(text)
-    return s.out[0] if main(s) else error(s.epos)
+    return s.out if main(s) else error(s.epos)
