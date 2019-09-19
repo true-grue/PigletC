@@ -24,7 +24,7 @@ ast_while = to(2, lambda x, y: While(x, y, pos=attr(x, "pos")))
 ast_var = to(1, lambda x: Var(x, pos=attr(x, "pos")))
 ast_func = to(2, lambda x, y: Func(x, y, pos=attr(x, "pos")))
 
-OPERATORS = "; ( ) { } + -  * / = != < <= > >=".split()
+OPERATORS = "; ( ) { } + -  * / = != < <= > >= ==".split()
 KEYWORDS = "if while int void".split()
 single_comment = seq(a("//"), many(non(a("\n"))))
 multi_comment = seq(a("/*"), many(non(a("*/"))), a("*/"))
