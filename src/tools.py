@@ -1,7 +1,7 @@
 # PigletC
 
 import sys
-from .raddsl_rewrite import Tree, perform
+from .raddsl_rewrite import Tree, apply
 from .term import is_term, is_list
 
 
@@ -15,11 +15,11 @@ def error(c, msg, pos=None):
     sys.exit(1)
 
 
-def apply(rules, ast, **attrs):
+def perform(rules, ast, **attrs):
     t = Tree(ast)
     for a in attrs:
         setattr(t, a, attrs[a])
-    if not perform(t, rules):
+    if not apply(t, rules):
         print("apply error")
         sys.exit(1)
     return t.out

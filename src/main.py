@@ -3,7 +3,7 @@
 from .parse import parse
 from .trans import trans
 from .gen import gen
-from .tools import error, apply
+from .tools import error, perform
 
 
 class Compiler:
@@ -20,6 +20,6 @@ class Compiler:
 def compile(path, text):
     c = Compiler(path, text)
     ast = parse(text, lambda p: error(c, "syntax error", p))
-    apply(trans, ast, c=c)
-    c.asm = "\n".join(apply(gen, c.ir, c=c) + ["DONE", ""])
+    perform(trans, ast, c=c)
+    c.asm = "\n".join(perform(gen, c.ir, c=c) + ["DONE", ""])
     return c

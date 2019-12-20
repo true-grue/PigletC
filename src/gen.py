@@ -5,25 +5,25 @@ from .term import *
 
 X, Y = let(X=any), let(Y=any)
 
-rules = alt(
-    rule(Push(Int(X)), to(lambda v: "PUSHI %d" % v.X)),
-    rule(Load(), to(lambda v: "LOAD")),
-    rule(Store(), to(lambda v: "STORE")),
-    rule(Call(), to(lambda v: "CALL")),
-    rule(Bop("+"), to(lambda v: "ADD")),
-    rule(Bop("-"), to(lambda v: "SUB")),
-    rule(Bop("*"), to(lambda v: "MUL")),
-    rule(Bop("/"), to(lambda v: "DIV")),
-    rule(Bop("<"), to(lambda v: "LESS")),
-    rule(Bop(">"), to(lambda v: "GREATER")),
-    rule(Bop("<="), to(lambda v: "LESS_OR_EQUAL")),
-    rule(Bop(">="), to(lambda v: "GREATER_OR_EQUAL")),
-    rule(Bop("=="), to(lambda v: "EQUAL")),
-    rule(Bop("!="), to(lambda v: "EQUAL\nPUSHI 0\nEQUAL")),
-    rule(Label(X), to(lambda v: "L%d:" % v.X)),
-    rule(Jump(X), to(lambda v: "JUMP L%d" % v.X)),
-    rule(JumpIf0(X), to(lambda v: "JUMP_IF_FALSE L%d" % v.X)),
-    rule(Asm(X), to(lambda v: v.X))
-)
+rules = rule(alt(
+    seq(Push(Int(X)), to(lambda e: "PUSHI %d" % e.X)),
+    seq(Load(), to(lambda e: "LOAD")),
+    seq(Store(), to(lambda e: "STORE")),
+    seq(Call(), to(lambda e: "CALL")),
+    seq(Bop("+"), to(lambda e: "ADD")),
+    seq(Bop("-"), to(lambda e: "SUB")),
+    seq(Bop("*"), to(lambda e: "MUL")),
+    seq(Bop("/"), to(lambda e: "DIV")),
+    seq(Bop("<"), to(lambda e: "LESS")),
+    seq(Bop(">"), to(lambda e: "GREATER")),
+    seq(Bop("<="), to(lambda e: "LESS_OR_EQUAL")),
+    seq(Bop(">="), to(lambda e: "GREATER_OR_EQUAL")),
+    seq(Bop("=="), to(lambda e: "EQUAL")),
+    seq(Bop("!="), to(lambda e: "EQUAL\nPUSHI 0\nEQUAL")),
+    seq(Label(X), to(lambda e: "L%d:" % e.X)),
+    seq(Jump(X), to(lambda e: "JUMP L%d" % e.X)),
+    seq(JumpIf0(X), to(lambda e: "JUMP_IF_FALSE L%d" % e.X)),
+    seq(Asm(X), to(lambda e: e.X))
+))
 
 gen = many(rules)
